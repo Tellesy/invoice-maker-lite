@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<a href="{{ url_for('dashboard') }}" class="button">&larr; Back to Dashboard</a>
+<h2>Edit User: {{ user.username }}</h2>
+<form method="post">
+    <label>First Name: <input type="text" name="first_name" value="{{ user.first_name }}"></label><br>
+    <label>Middle Name: <input type="text" name="middle_name" value="{{ user.middle_name }}"></label><br>
+    <label>Last Name: <input type="text" name="last_name" value="{{ user.last_name }}"></label><br>
+    <label>Email: <input type="email" name="email" value="{{ user.email }}"></label><br>
+    <label>Phone: <input type="text" name="phone_number" value="{{ user.phone_number }}"></label><br>
+    <label>Admin: <input type="checkbox" name="is_admin" {% if user.is_admin %}checked{% endif %}></label><br>
+    <label>Active: <input type="checkbox" name="is_active" {% if user.is_active %}checked{% endif %}></label><br>
+    <button type="submit">Save</button>
+    <a href="{{ url_for('admin_users') }}">Cancel</a>
+</form>
+{% endblock %}

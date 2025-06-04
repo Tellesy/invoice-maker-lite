@@ -5,22 +5,51 @@
     Ahtri 12, Tallinn, 10151, Estonia.<br>
     Invoice@anhi.io
 </div>
-<h2>Invoice #{{ invoice.id }}</h2>
+
 {% if invoice.project_code %}
 <p><strong>Project code:</strong> {{ invoice.project_code }}</p>
 {% endif %}
 <p>Date: {{ invoice.date }}</p>
-<p><strong>Sender:</strong> {{ user.first_name }}{% if user.middle_name %} {{ user.middle_name }}{% endif %} {{ user.last_name }}<br>
-Email: {{ user.email }}<br>
-Phone: {{ user.phone_number }}</p>
+<div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5em;">
+    <div>
+        {% if info.logo_path %}
+            <img src="/{{ info.logo_path }}" alt="Logo" style="max-height: 70px;">
+        {% else %}
+            <h2 style="margin:0;">{{ info.company_name }}</h2>
+        {% endif %}
+        <div style="font-size: 0.95em;">
+            {{ info.address }}<br>
+            {{ info.email }}<br>
+            {% if info.phone %}{{ info.phone }}<br>{% endif %}
+        </div>
+    </div>
+    <div style="text-align:right;">
+        <strong>Invoice {{ invoice.invoice_number }}</strong><br>
+        <span>Date: {{ invoice.date }}</span>
+    </div>
+</div>
+<div style="margin-bottom: 1em;">
+    <strong>Sender:</strong> {{ user.first_name }}{% if user.middle_name %} {{ user.middle_name }}{% endif %} {{ user.last_name }}<br>
+    Email: {{ user.email }}<br>
+    Phone: {{ user.phone_number }}
+</div>
+<div style="margin-bottom: 1em;">
+    <strong>Recipient:</strong><br>
+    {{ info.company_name }}<br>
+    {{ info.address }}<br>
+    {{ info.email }}
+    {% if info.phone %}<br>{{ info.phone }}{% endif %}
+</div>
 <p>Currency: {{ invoice.currency }}</p>
 <table>
     <thead>
         <tr>
+            <th>#</th>
+            <th>Item Name</th>
             <th>Description</th>
             <th>Quantity</th>
             <th>Unit Price</th>
-            <th>Line Total</th>
+            <th>Amount</th>
         </tr>
     </thead>
     <tbody>
@@ -29,14 +58,19 @@ Phone: {{ user.phone_number }}</p>
         {% set line_total = line.quantity * line.unit_price %}
         {% set total = total + line_total %}
         <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ line.item_name }}</td>
             <td>{{ line.description }}</td>
             <td>{{ line.quantity }}</td>
-            <td>{{ line.unit_price|currency_format(invoice.currency) }}</td>
-            <td>{{ line_total|currency_format(invoice.currency) }}</td>
+            <td>{{ '%.2f'|format(line.unit_price) }}</td>
+            <td>{{ '%.2f'|format(line_total) }}</td>
         </tr>
     {% endfor %}
     </tbody>
 </table>
+{% if invoice.payment_info %}
+<div style="margin-top: 2em;"><strong>Payment Information:</strong><br>{{ invoice.payment_info }}</div>
+{% endif %}
 <div class="invoice-total">
     Total: {{ total|currency_format(invoice.currency) }} {{ invoice.currency }}
 </div>

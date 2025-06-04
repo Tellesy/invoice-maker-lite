@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<a href="{{ url_for('dashboard') }}" class="button">&larr; Back to Dashboard</a>
+<h2>Add New User</h2>
+<form method="post">
+    <label>Username: <input type="text" name="username" required></label><br>
+    <label>Password: <input type="password" name="password" required></label><br>
+    <label>Admin: <input type="checkbox" name="is_admin"></label><br>
+    <button type="submit">Add User</button>
+    <a href="{{ url_for('admin_users') }}">Cancel</a>
+</form>
+{% endblock %}

@@ -2,7 +2,11 @@
 {% block content %}
 <h2>{% if invoice %}Edit{% else %}New{% endif %} Invoice</h2>
 <form method="post" id="invoice-form">
-    
+    {% if user_info_incomplete %}
+    <div class="error">Please complete your user information (first name, last name, email, phone) before creating an invoice.</div>
+    {% endif %}
+    <label for="date">Invoice Date</label>
+    <input type="date" name="date" id="date" value="{{ invoice.date if invoice else '' }}" required>
     <label for="currency">Currency</label>
     <select name="currency" id="currency" required>
         {% for code, sign in currencies %}
@@ -15,6 +19,8 @@
     <table id="line-items-table">
         <thead>
             <tr>
+                <th>#</th>
+                <th>Item Name</th>
                 <th>Description</th>
                 <th>Quantity</th>
                 <th>Unit Price</th>
@@ -25,7 +31,9 @@
         {% if invoice %}
             {% for line in invoice.lines %}
             <tr>
-                <td><input type="text" name="description" value="{{ line.description }}" required></td>
+                <td class="item-number">{{ loop.index }}</td>
+                <td><input type="text" name="item_name" value="{{ line.item_name }}" required></td>
+                <td><input type="text" name="description" value="{{ line.description }}"></td>
                 <td><input type="number" name="quantity" value="{{ line.quantity }}" step="any" required></td>
                 <td><input type="number" name="unit_price" value="{{ line.unit_price }}" step="any" required></td>
                 <td><button type="button" class="remove-row" onclick="removeRow(this)">–</button></td>
@@ -33,7 +41,9 @@
             {% endfor %}
         {% else %}
             <tr>
-                <td><input type="text" name="description" required></td>
+                <td class="item-number">1</td>
+                <td><input type="text" name="item_name" required></td>
+                <td><input type="text" name="description"></td>
                 <td><input type="number" name="quantity" step="any" required></td>
                 <td><input type="number" name="unit_price" step="any" required></td>
                 <td><button type="button" class="remove-row" onclick="removeRow(this)">–</button></td>
@@ -42,6 +52,9 @@
         </tbody>
     </table>
     <button type="button" id="add-row">+ Add Item</button>
+    <br><br>
+    <label for="payment_info">Payment Information</label>
+    <textarea name="payment_info" id="payment_info" rows="3">{{ invoice.payment_info if invoice and invoice.payment_info else '' }}</textarea>
     <br><br>
     <button type="submit">Save Invoice</button>
     <a href="{{ url_for('invoices') }}" class="secondary">Cancel</a>
@@ -62,6 +75,10 @@ document.getElementById('add-row').onclick = function() {
         input.value = '';
     }
     tbody.appendChild(row);
+    // Update item numbers
+    Array.from(tbody.rows).forEach((row, idx) => {
+        row.querySelector('.item-number').textContent = idx + 1;
+    });
 };
 </script>
 {% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<a href="{{ url_for('dashboard') }}" class="button">&larr; Back to Dashboard</a>
+<h2>Company Information</h2>
+<form method="post" enctype="multipart/form-data">
+    <label>Company Name: <input type="text" name="company_name" value="{{ info.company_name }}" required></label><br>
+    <label>Address: <input type="text" name="address" value="{{ info.address }}" required></label><br>
+    <label>Email: <input type="email" name="email" value="{{ info.email }}" required></label><br>
+    <label>Phone: <input type="text" name="phone" value="{{ info.phone }}"></label><br>
+    <label>Logo: <input type="file" name="logo"></label>
+    {% if info.logo_path %}<br>
+        <img src="/{{ info.logo_path }}" alt="Logo" style="max-height:80px;">
+        <br>
+    {% endif %}
+    <button type="submit">Save</button>
+</form>
+{% endblock %}

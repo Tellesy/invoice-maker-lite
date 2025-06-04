@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<a href="{{ url_for('dashboard') }}" class="button">&larr; Back to Dashboard</a>
+<h2>User Management</h2>
+<a href="{{ url_for('admin_add_user') }}" class="button">Add New User</a>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th><th>Username</th><th>Name</th><th>Email</th><th>Admin</th><th>Active</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.full_name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ 'Yes' if user.is_admin else 'No' }}</td>
+            <td>{{ 'Yes' if user.is_active else 'No' }}</td>
+            <td>
+                <a href="{{ url_for('admin_edit_user', user_id=user.id) }}">Edit</a>
+                <form action="{{ url_for('admin_reset_password', user_id=user.id) }}" method="post" style="display:inline;">
+                    <input type="password" name="new_password" placeholder="New Password" required style="width:110px;">
+                    <button type="submit">Reset Password</button>
+                </form>
+                <form action="{{ url_for('admin_delete_user', user_id=user.id) }}" method="post" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Delete user?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
