@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{% if invoice %}Edit{% else %}New{% endif %} Invoice</h2>
+<form method="post" id="invoice-form">
+    <label for="contact_id">Client</label>
+    <select name="contact_id" id="contact_id" required>
+        {% for contact in contacts %}
+        <option value="{{ contact.id }}" {% if invoice and invoice.contact_id == contact.id %}selected{% endif %}>{{ contact.full_name }}</option>
+        {% endfor %}
+    </select>
+    <label for="currency">Currency</label>
+    <select name="currency" id="currency" required>
+        {% for code, sign in currencies %}
+        <option value="{{ code }}" {% if invoice and invoice.currency == code %}selected{% endif %}>{{ code }} ({{ sign }})</option>
+        {% endfor %}
+    </select>
+    <label for="project_code">Project code (optional)</label>
+    <input type="text" name="project_code" id="project_code" value="{{ invoice.project_code if invoice and invoice.project_code else '' }}">
+    <h3>Line Items</h3>
+    <table id="line-items-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="line-items-body">
+        {% if invoice %}
+            {% for line in invoice.lines %}
+            <tr>
+                <td><input type="text" name="description" value="{{ line.description }}" required></td>
+                <td><input type="number" name="quantity" value="{{ line.quantity }}" step="any" required></td>
+                <td><input type="number" name="unit_price" value="{{ line.unit_price }}" step="any" required></td>
+                <td><button type="button" class="remove-row" onclick="removeRow(this)">–</button></td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td><input type="text" name="description" required></td>
+                <td><input type="number" name="quantity" step="any" required></td>
+                <td><input type="number" name="unit_price" step="any" required></td>
+                <td><button type="button" class="remove-row" onclick="removeRow(this)">–</button></td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+    <button type="button" id="add-row">+ Add Item</button>
+    <br><br>
+    <button type="submit">Save Invoice</button>
+    <a href="{{ url_for('invoices') }}" class="secondary">Cancel</a>
+</form>
+<script>
+// Minimal JS for dynamic row add/remove
+function removeRow(btn) {
+    const row = btn.closest('tr');
+    const tbody = document.getElementById('line-items-body');
+    if (tbody.rows.length > 1) {
+        row.remove();
+    }
+}
+document.getElementById('add-row').onclick = function() {
+    const tbody = document.getElementById('line-items-body');
+    const row = tbody.rows[0].cloneNode(true);
+    for (let input of row.querySelectorAll('input')) {
+        input.value = '';
+    }
+    tbody.appendChild(row);
+};
+</script>
+{% endblock %}

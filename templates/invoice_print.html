@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="margin-bottom:20px">
+    <strong>Annir Initiative by Anhi OÜ</strong><br>
+    Ahtri 12, Tallinn, 10151, Estonia.<br>
+    Invoice@anhi.io
+</div>
+<h2>Invoice #{{ invoice.id }}</h2>
+{% if invoice.project_code %}
+<p><strong>Project code:</strong> {{ invoice.project_code }}</p>
+{% endif %}
+<p>Date: {{ invoice.date }}</p>
+<p>Client: {{ invoice.contact.full_name }}<br>
+Email: {{ invoice.contact.email }}<br>
+Phone: {{ invoice.contact.phone_number }}</p>
+<p>Currency: {{ invoice.currency }}</p>
+<table>
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Line Total</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% set total = 0 %}
+    {% for line in invoice.lines %}
+        {% set line_total = line.quantity * line.unit_price %}
+        {% set total = total + line_total %}
+        <tr>
+            <td>{{ line.description }}</td>
+            <td>{{ line.quantity }}</td>
+            <td>{{ line.unit_price|currency_format(invoice.currency) }}</td>
+            <td>{{ line_total|currency_format(invoice.currency) }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div class="invoice-total">
+    Total: {{ total|currency_format(invoice.currency) }} {{ invoice.currency }}
+</div>
+<p class="no-print"><button onclick="window.print()">Print</button></p>
+{% endblock %}

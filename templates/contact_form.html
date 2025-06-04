@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ 'Edit' if contact else 'New' }} Contact</h2>
+<form method="post">
+    <label for="full_name">Full Name</label>
+    <input type="text" name="full_name" id="full_name" value="{{ contact.full_name if contact else '' }}" required>
+    <label for="email">Email</label>
+    <input type="email" name="email" id="email" value="{{ contact.email if contact else '' }}" required>
+    <label for="phone_number">Phone Number</label>
+    <input type="text" name="phone_number" id="phone_number" value="{{ contact.phone_number if contact else '' }}" required>
+    <button type="submit">Save</button>
+    <a href="{{ url_for('contacts') }}" class="secondary">Cancel</a>
+</form>
+{% endblock %}
