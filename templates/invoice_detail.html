@@ -10,9 +10,9 @@
 <p><strong>Project code:</strong> {{ invoice.project_code }}</p>
 {% endif %}
 <p>Date: {{ invoice.date }}</p>
-<p>Client: {{ invoice.contact.full_name }}<br>
-Email: {{ invoice.contact.email }}<br>
-Phone: {{ invoice.contact.phone_number }}</p>
+<p><strong>Sender:</strong> {{ user.first_name }}{% if user.middle_name %} {{ user.middle_name }}{% endif %} {{ user.last_name }}<br>
+Email: {{ user.email }}<br>
+Phone: {{ user.phone_number }}</p>
 <p>Currency: {{ invoice.currency }}</p>
 <table>
     <thead>

@@ -2,12 +2,7 @@
 {% block content %}
 <h2>{% if invoice %}Edit{% else %}New{% endif %} Invoice</h2>
 <form method="post" id="invoice-form">
-    <label for="contact_id">Client</label>
-    <select name="contact_id" id="contact_id" required>
-        {% for contact in contacts %}
-        <option value="{{ contact.id }}" {% if invoice and invoice.contact_id == contact.id %}selected{% endif %}>{{ contact.full_name }}</option>
-        {% endfor %}
-    </select>
+    
     <label for="currency">Currency</label>
     <select name="currency" id="currency" required>
         {% for code, sign in currencies %}

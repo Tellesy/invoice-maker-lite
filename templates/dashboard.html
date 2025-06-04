@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Welcome to Invoice-maker</h1>
-<p><a href="{{ url_for('contacts') }}">Manage Contacts</a> | <a href="{{ url_for('invoices') }}">Manage Invoices</a> | <a href="{{ url_for('logout') }}">Logout</a></p>
+<p><a href="{{ url_for('user_info') }}">User Information</a> | <a href="{{ url_for('invoices') }}">Manage Invoices</a> | <a href="{{ url_for('change_password') }}">Change Password</a> | <a href="{{ url_for('logout') }}">Logout</a></p>
 <h2>Recent Invoices</h2>
 <table>
     <thead>

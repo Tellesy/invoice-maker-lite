@@ -2,7 +2,7 @@ import os
 from datetime import date
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from flask_sqlalchemy import SQLAlchemy
-from models import db, User, Contact, Invoice, InvoiceLine
+from models import db, User, Invoice, InvoiceLine
 from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
@@ -63,45 +63,22 @@ def dashboard():
     invoices = Invoice.query.order_by(Invoice.date.desc()).all()
     return render_template('dashboard.html', invoices=invoices)
 
-# --- Contacts ---
-@app.route('/contacts')
-@login_required
-def contacts():
-    contacts = Contact.query.all()
-    return render_template('contacts.html', contacts=contacts)
+# --- User Information ---
 
-@app.route('/contacts/new', methods=['GET', 'POST'])
+@app.route('/user_info', methods=['GET', 'POST'])
 @login_required
-def new_contact():
+def user_info():
+    user = User.query.get(session['user_id'])
     if request.method == 'POST':
-        full_name = request.form['full_name']
-        email = request.form['email']
-        phone_number = request.form['phone_number']
-        contact = Contact(full_name=full_name, email=email, phone_number=phone_number)
-        db.session.add(contact)
+        user.first_name = request.form['first_name']
+        user.middle_name = request.form['middle_name']
+        user.last_name = request.form['last_name']
+        user.email = request.form['email']
+        user.phone_number = request.form['phone_number']
         db.session.commit()
-        return redirect(url_for('contacts'))
-    return render_template('contact_form.html', contact=None)
-
-@app.route('/contacts/<int:contact_id>/edit', methods=['GET', 'POST'])
-@login_required
-def edit_contact(contact_id):
-    contact = Contact.query.get_or_404(contact_id)
-    if request.method == 'POST':
-        contact.full_name = request.form['full_name']
-        contact.email = request.form['email']
-        contact.phone_number = request.form['phone_number']
-        db.session.commit()
-        return redirect(url_for('contacts'))
-    return render_template('contact_form.html', contact=contact)
-
-@app.route('/contacts/<int:contact_id>/delete', methods=['POST'])
-@login_required
-def delete_contact(contact_id):
-    contact = Contact.query.get_or_404(contact_id)
-    db.session.delete(contact)
-    db.session.commit()
-    return redirect(url_for('contacts'))
+        flash('User information updated.', 'info')
+        return redirect(url_for('user_info'))
+    return render_template('user_info.html', user=user)
 
 # --- Invoices ---
 @app.route('/invoices')
@@ -113,12 +90,12 @@ def invoices():
 @app.route('/invoices/new', methods=['GET', 'POST'])
 @login_required
 def new_invoice():
-    contacts = Contact.query.all()
-    if not contacts:
-        flash('Please add a contact before creating an invoice.', 'error')
-        return redirect(url_for('contacts'))
+
+
+
+
     if request.method == 'POST':
-        contact_id = request.form['contact_id']
+
         currency = request.form['currency']
         line_items = []
         descriptions = request.form.getlist('description')
@@ -132,7 +109,7 @@ def new_invoice():
                     'quantity': float(qty or 0),
                     'unit_price': float(price or 0),
                 })
-        invoice = Invoice(contact_id=contact_id, date=date.today(), currency=currency, project_code=project_code)
+        invoice = Invoice(date=date.today(), currency=currency, project_code=project_code)
         db.session.add(invoice)
         db.session.flush()  # Get invoice.id
         for item in line_items:
@@ -144,21 +121,22 @@ def new_invoice():
             ))
         db.session.commit()
         return redirect(url_for('invoice_detail', invoice_id=invoice.id))
-    return render_template('invoice_form.html', contacts=contacts, currencies=CURRENCIES)
+    return render_template('invoice_form.html', currencies=CURRENCIES)
 
 @app.route('/invoices/<int:invoice_id>')
 @login_required
 def invoice_detail(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
-    return render_template('invoice_detail.html', invoice=invoice, currencies=CURRENCIES)
+    user = User.query.get(session['user_id'])
+    return render_template('invoice_detail.html', invoice=invoice, user=user, currencies=CURRENCIES)
 
 @app.route('/invoices/<int:invoice_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
-    contacts = Contact.query.all()
+
     if request.method == 'POST':
-        invoice.contact_id = request.form['contact_id']
+
         invoice.currency = request.form['currency']
         invoice.project_code = request.form.get('project_code') or None
         # Remove old lines
@@ -176,7 +154,7 @@ def edit_invoice(invoice_id):
                 ))
         db.session.commit()
         return redirect(url_for('invoice_detail', invoice_id=invoice.id))
-    return render_template('invoice_form.html', invoice=invoice, contacts=contacts, currencies=CURRENCIES)
+    return render_template('invoice_form.html', invoice=invoice, currencies=CURRENCIES)
 
 @app.route('/invoices/<int:invoice_id>/delete', methods=['POST'])
 @login_required
@@ -191,7 +169,31 @@ def delete_invoice(invoice_id):
 @login_required
 def print_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
-    return render_template('invoice_print.html', invoice=invoice, currencies=CURRENCIES)
+    user = User.query.get(session['user_id'])
+    return render_template('invoice_print.html', invoice=invoice, user=user, currencies=CURRENCIES)
+
+# --- Change Password ---
+
+@app.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    user = User.query.get(session['user_id'])
+    if request.method == 'POST':
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+        if not user.check_password(current_password):
+            flash('Current password is incorrect.', 'error')
+        elif new_password != confirm_password:
+            flash('New passwords do not match.', 'error')
+        elif len(new_password) < 4:
+            flash('New password must be at least 4 characters.', 'error')
+        else:
+            user.set_password(new_password)
+            db.session.commit()
+            flash('Password changed successfully.', 'info')
+            return redirect(url_for('dashboard'))
+    return render_template('change_password.html')
 
 # --- Utility ---
 @app.template_filter('currency_format')

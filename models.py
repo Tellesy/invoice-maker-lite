@@ -7,6 +7,11 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    first_name = db.Column(db.String(64), nullable=True)
+    middle_name = db.Column(db.String(64), nullable=True)
+    last_name = db.Column(db.String(64), nullable=True)
+    email = db.Column(db.String(120), nullable=True)
+    phone_number = db.Column(db.String(30), nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -14,19 +19,11 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class Contact(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String(120), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
-    phone_number = db.Column(db.String(30), nullable=False)
-
 class Invoice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    contact_id = db.Column(db.Integer, db.ForeignKey('contact.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
     currency = db.Column(db.String(3), nullable=False)
     project_code = db.Column(db.String(120), nullable=True)
-    contact = db.relationship('Contact', backref=db.backref('invoices', lazy=True))
 
 class InvoiceLine(db.Model):
     id = db.Column(db.Integer, primary_key=True)
