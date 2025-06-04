@@ -354,7 +354,8 @@ def delete_invoice(invoice_id):
 def print_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     user = User.query.get(session['user_id'])
-    return render_template('invoice_print.html', invoice=invoice, user=user, currencies=CURRENCIES)
+    info = CompanyInfo.query.first() or CompanyInfo()  # Get or create default company info
+    return render_template('invoice_print.html', invoice=invoice, user=user, info=info, currencies=CURRENCIES)
 
 # --- Change Password ---
 
