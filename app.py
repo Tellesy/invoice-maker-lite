@@ -201,6 +201,46 @@ def admin_company():
         return redirect(url_for('admin_company'))
     return render_template('admin_company.html', info=info)
 
+@app.route('/admin/projects', methods=['GET', 'POST'])
+@admin_required
+def admin_projects():
+    from models import Project
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'add':
+            code = request.form.get('code', '').strip()
+            name = request.form.get('name', '').strip()
+            if code and name:
+                if not Project.query.filter_by(code=code).first():
+                    project = Project(code=code, name=name)
+                    db.session.add(project)
+                    db.session.commit()
+                else:
+                    flash('Project code already exists.', 'error')
+            else:
+                flash('Both code and name are required.', 'error')
+        elif action == 'edit':
+            project_id = request.form.get('project_id', type=int)
+            code = request.form.get('code', '').strip()
+            name = request.form.get('name', '').strip()
+            project = Project.query.get(project_id)
+            if project and code and name:
+                project.code = code
+                project.name = name
+                db.session.commit()
+            else:
+                flash('Invalid project or missing data.', 'error')
+        elif action == 'delete':
+            project_id = request.form.get('project_id', type=int)
+            project = Project.query.get(project_id)
+            if project:
+                db.session.delete(project)
+                db.session.commit()
+            else:
+                flash('Project not found.', 'error')
+    projects = Project.query.order_by(Project.id).all()
+    return render_template('admin_projects.html', projects=projects)
+
 # --- Dashboard ---
 @app.route('/')
 @login_required

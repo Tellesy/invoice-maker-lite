@@ -8,6 +8,7 @@
     {% if user.is_admin %}
         <a href="{{ url_for('admin_users') }}">User Management</a> |
         <a href="{{ url_for('admin_company') }}">Company Info</a> |
+        <a href="{{ url_for('admin_projects') }}">Project Management</a> |
     {% endif %}
     <a href="{{ url_for('logout') }}">Logout</a>
 </p>

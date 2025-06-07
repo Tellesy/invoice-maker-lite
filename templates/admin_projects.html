@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Manage Projects</h2>
+<p><a href="{{ url_for('dashboard') }}">Dashboard</a> | <a href="{{ url_for('logout') }}">Logout</a></p>
+
+<!-- Add Project Form -->
+<h3>Add New Project</h3>
+<form method="post" action="{{ url_for('admin_projects') }}">
+    <input type="hidden" name="action" value="add">
+    <label>Code: <input type="text" name="code" required></label><br>
+    <label>Name: <input type="text" name="name" required></label><br>
+    <button type="submit">Add Project</button>
+</form>
+
+<!-- List Projects -->
+<h3>Existing Projects</h3>
+<table>
+    <thead>
+        <tr><th>ID</th><th>Code</th><th>Name</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+    {% for project in projects %}
+        <tr>
+            <form method="post" action="{{ url_for('admin_projects') }}">
+                <input type="hidden" name="action" value="edit">
+                <input type="hidden" name="project_id" value="{{ project.id }}">
+                <td>{{ project.id }}</td>
+                <td><input type="text" name="code" value="{{ project.code }}" required></td>
+                <td><input type="text" name="name" value="{{ project.name }}" required></td>
+                <td>
+                    <button type="submit">Save</button>
+            </form>
+            <form method="post" action="{{ url_for('admin_projects') }}" style="display:inline">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="project_id" value="{{ project.id }}">
+                <button type="submit" onclick="return confirm('Delete this project?')">Delete</button>
+            </form>
+                </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

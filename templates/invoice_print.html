@@ -6,8 +6,8 @@
     Invoice@anhi.io
 </div>
 
-{% if invoice.project_code %}
-<p><strong>Project code:</strong> {{ invoice.project_code }}</p>
+{% if invoice.project and invoice.project.code %}
+<p><strong>Project code:</strong> {{ invoice.project.code }}</p>
 {% endif %}
 <p>Date: {{ invoice.date }}</p>
 <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5em;">
@@ -41,9 +41,6 @@
     {% if info.phone %}<br>{{ info.phone }}{% endif %}
 </div>
 <p>Date: {{ invoice.date }}</p>
-{% if invoice.project_code %}
-<p><strong>Project code:</strong> {{ invoice.project_code }}</p>
-{% endif %}
 <p>Currency: {{ invoice.currency }}</p>
 <table>
     <thead>
