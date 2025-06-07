@@ -14,6 +14,8 @@ A simple, secure, and open source web application for creating and managing invo
 - Admin-only controls and navigation
 
 ## Setup
+
+### Local Development
 1. Create a virtual environment and install dependencies:
    ```bash
    python3 -m venv venv
@@ -25,6 +27,36 @@ A simple, secure, and open source web application for creating and managing invo
    python app.py
    ```
 3. Log in with username: `admin`, password: `admin` (first run only, you should change this password immediately!)
+
+### Running with Docker
+1. Build the Docker image:
+   ```bash
+   docker build -t invoice-maker-lite .
+   ```
+2. Run the container:
+   ```bash
+   docker run -d -p 5000:5000 --name invoice-maker-lite invoice-maker-lite
+   ```
+   The app will be available at http://localhost:5000
+
+- To override environment variables (e.g., SECRET_KEY), use:
+   ```bash
+   docker run -d -p 5000:5000 -e SECRET_KEY=your-secret-key --name invoice-maker-lite invoice-maker-lite
+   ```
+
+### Deploying to Hosting Services
+- For platforms like Heroku, Render, or Fly.io, use the Dockerfile or a compatible Procfile.
+- For traditional Python hosting, use Gunicorn:
+   ```bash
+   gunicorn -w 4 -b 0.0.0.0:5000 app:app
+   ```
+- Ensure to set environment variables and use a secure SECRET_KEY in production.
+
+### Security Reminders
+- Change the `SECRET_KEY` for production (can be set via environment variable).
+- Change the default admin password immediately after first login.
+- Use HTTPS in production deployments.
+- Review and configure database and environment settings for your deployment.
 
 ## Directory Structure
 - `app.py`: Main Flask application and routes
