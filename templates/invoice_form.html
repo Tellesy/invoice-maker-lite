@@ -13,8 +13,15 @@
         <option value="{{ code }}" {% if invoice and invoice.currency == code %}selected{% endif %}>{{ code }} ({{ sign }})</option>
         {% endfor %}
     </select>
-    <label for="project_code">Project code (optional)</label>
-    <input type="text" name="project_code" id="project_code" value="{{ invoice.project_code if invoice and invoice.project_code else '' }}">
+    <label for="project_id">Project <span style="color:red">*</span></label>
+    <select name="project_id" id="project_id" required>
+        <option value="" disabled {% if not invoice or not invoice.project_id %}selected{% endif %}>Select a project...</option>
+        {% for project in projects %}
+            <option value="{{ project.id }}" {% if invoice and invoice.project_id == project.id %}selected{% endif %}>
+                {{ project.code }} - {{ project.name }}
+            </option>
+        {% endfor %}
+    </select>
     <h3>Line Items</h3>
     <table id="line-items-table">
         <thead>

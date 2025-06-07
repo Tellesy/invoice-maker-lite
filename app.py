@@ -236,39 +236,25 @@ def invoices():
 @app.route('/invoices/new', methods=['GET', 'POST'])
 @login_required
 def new_invoice():
+    from models import Project
     user = User.query.get(session['user_id'])
     user_info_incomplete = not all([
         user.first_name, user.last_name, user.email, user.phone_number
     ])
+    projects = Project.query.all()
     if request.method == 'POST':
         if user_info_incomplete:
             flash('Please complete your user information before creating an invoice.', 'error')
-            return render_template('invoice_form.html', currencies=CURRENCIES, user_info_incomplete=True)
-        # Get fields
+            return render_template('invoice_form.html', currencies=CURRENCIES, user_info_incomplete=True, projects=projects)
         currency = request.form['currency']
-        project_code = request.form.get('project_code') or None
-        date_str = request.form['date']
+        project_id = request.form.get('project_id', type=int)
+        if not project_id or not Project.query.get(project_id):
+            flash('Please select a valid project.', 'error')
+            return render_template('invoice_form.html', currencies=CURRENCIES, user_info_incomplete=user_info_incomplete, projects=projects)
+        # Generate unique invoice number
         from datetime import datetime
-        try:
-            invoice_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        except Exception:
-            invoice_date = date.today()
-        payment_info = request.form.get('payment_info')
-        item_names = request.form.getlist('item_name')
-        descriptions = request.form.getlist('description')
-        quantities = request.form.getlist('quantity')
-        unit_prices = request.form.getlist('unit_price')
-        line_items = []
-        for name, desc, qty, price in zip(item_names, descriptions, quantities, unit_prices):
-            if name.strip():
-                line_items.append({
-                    'item_name': name.strip(),
-                    'description': desc.strip(),
-                    'quantity': float(qty or 0),
-                    'unit_price': float(price or 0),
-                })
-        # Generate invoice number
         import random, string
+        invoice_date = date.fromisoformat(request.form['date'])
         yyyymm = invoice_date.strftime('%Y%m')
         initials = (user.first_name[0] if user.first_name else '') + (user.last_name[0] if user.last_name else '')
         initials = initials.upper()
@@ -282,29 +268,33 @@ def new_invoice():
                 break
         else:
             flash('Could not generate unique invoice number. Try again.', 'error')
-            return render_template('invoice_form.html', currencies=CURRENCIES, user_info_incomplete=False)
-        # Save invoice
+            return render_template('invoice_form.html', currencies=CURRENCIES, user_info_incomplete=user_info_incomplete, projects=projects)
         invoice = Invoice(
             invoice_number=invoice_number,
             date=invoice_date,
             currency=currency,
-            project_code=project_code,
-            payment_info=payment_info
+            project_id=project_id,
+            payment_info=request.form.get('payment_info'),
         )
         db.session.add(invoice)
         db.session.flush()  # Get invoice.id
-        for item in line_items:
-            db.session.add(InvoiceLine(
-                invoice_id=invoice.id,
-                item_name=item['item_name'],
-                description=item['description'],
-                quantity=item['quantity'],
-                unit_price=item['unit_price']
-            ))
+        # Add line items (same as before)
+        descriptions = request.form.getlist('description')
+        quantities = request.form.getlist('quantity')
+        unit_prices = request.form.getlist('unit_price')
+        item_names = request.form.getlist('item_name')
+        for name, desc, qty, price in zip(item_names, descriptions, quantities, unit_prices):
+            if name.strip():
+                db.session.add(InvoiceLine(
+                    invoice_id=invoice.id,
+                    item_name=name.strip(),
+                    description=desc.strip(),
+                    quantity=float(qty or 0),
+                    unit_price=float(price or 0)
+                ))
         db.session.commit()
         return redirect(url_for('invoice_detail', invoice_id=invoice.id))
-    return render_template('invoice_form.html', currencies=CURRENCIES, user_info_incomplete=user_info_incomplete)
-
+    return render_template('invoice_form.html', currencies=CURRENCIES, user_info_incomplete=user_info_incomplete, projects=projects)
 
 @app.route('/invoices/<int:invoice_id>')
 @login_required
@@ -317,21 +307,27 @@ def invoice_detail(invoice_id):
 @app.route('/invoices/<int:invoice_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_invoice(invoice_id):
+    from models import Project
     invoice = Invoice.query.get_or_404(invoice_id)
-
+    projects = Project.query.all()
     if request.method == 'POST':
-
         invoice.currency = request.form['currency']
-        invoice.project_code = request.form.get('project_code') or None
+        project_id = request.form.get('project_id', type=int)
+        if not project_id or not Project.query.get(project_id):
+            flash('Please select a valid project.', 'error')
+            return render_template('invoice_form.html', invoice=invoice, currencies=CURRENCIES, projects=projects)
+        invoice.project_id = project_id
         # Remove old lines
         InvoiceLine.query.filter_by(invoice_id=invoice.id).delete()
+        item_names = request.form.getlist('item_name')
         descriptions = request.form.getlist('description')
         quantities = request.form.getlist('quantity')
         unit_prices = request.form.getlist('unit_price')
-        for desc, qty, price in zip(descriptions, quantities, unit_prices):
-            if desc.strip():
+        for name, desc, qty, price in zip(item_names, descriptions, quantities, unit_prices):
+            if name.strip():
                 db.session.add(InvoiceLine(
                     invoice_id=invoice.id,
+                    item_name=name.strip(),
                     description=desc.strip(),
                     quantity=float(qty or 0),
                     unit_price=float(price or 0)

@@ -45,13 +45,23 @@ class CompanyInfo(db.Model):
             db.session.commit()
         return info
 
+class Project(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(64), unique=True, nullable=False)
+    name = db.Column(db.String(128), nullable=False)
+
+    def __repr__(self):
+        return f"<Project {self.code} - {self.name}>"
+
 class Invoice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     invoice_number = db.Column(db.String(32), unique=True, nullable=False)
     date = db.Column(db.Date, nullable=False)
     currency = db.Column(db.String(3), nullable=False)
-    project_code = db.Column(db.String(120), nullable=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    project_code = db.Column(db.String(120), nullable=True)  # Deprecated, for legacy only
     payment_info = db.Column(db.Text, nullable=True)
+    project = db.relationship('Project', backref=db.backref('invoices', lazy=True))
 
 class InvoiceLine(db.Model):
     id = db.Column(db.Integer, primary_key=True)
