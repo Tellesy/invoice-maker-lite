@@ -28,7 +28,7 @@
         <tr>
             <td>{{ invoice.id }}</td>
             <td>{{ invoice.date }}</td>
-            <td>{{ invoice.contact.full_name }}</td>
+            <td>{{ invoice.project.code }} - {{ invoice.project.name }}</td>
             <td>{{ invoice.currency }}</td>
             <td>
                 <a href="{{ url_for('invoice_detail', invoice_id=invoice.id) }}">View</a> |

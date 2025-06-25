@@ -27,10 +27,12 @@ EXPOSE 5000
 # Set environment variables for Flask
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
+# Production secret key (can override with -e SECRET_KEY at runtime)
+ENV SECRET_KEY=ZyA5u4s3cG8nV6kP1wR2bL0qFt9hXs7e
 
 # Create a non-root user for security
 RUN adduser --disabled-password --gecos '' flaskuser
 USER flaskuser
 
-# Entrypoint
-CMD ["flask", "run"]
+# Entrypoint: Use Gunicorn for production
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
